@@ -6,7 +6,7 @@
 同时开多个 AI 会话推进同一个项目时——谁说了算、什么算完成、什么需要你授权。
 
 ![license](https://img.shields.io/badge/license-CC%20BY%204.0-lightgrey)
-![version](https://img.shields.io/badge/playbook-v2.2-blue)
+![version](https://img.shields.io/badge/playbook-v2.3-blue)
 ![works with](https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex%20%7C%20any%20AI-8A2BE2)
 ![format](https://img.shields.io/badge/format-pure%20Markdown-green)
 
@@ -24,7 +24,8 @@
 | 找人 | 窗口一多，不知道该在哪个窗口说话 | `★` 是总控，`↳` 不用理，`💬` 是总控请你去定事的窗口 |
 | 定方案 | 总控把方案转述一遍，你看不到依据、没法追问 | 总控只告诉你去哪个窗口、定几项，你在产品经理窗口边看边定 |
 | 并行 | 总控做一件，其他事干等 | 任务池 + 4 个调度时点，能并行就并行，改同一批文件的自动排先后 |
-| 状态 | 各窗口各写一份，互相覆盖 | 一份状态文件，只有总控写 |
+| 状态 | 各窗口各写一份，互相覆盖；换个总控就换个样子 | 一份状态文件、一张固定看板，说“看板”随时出 |
+| 大任务 | 一个任务要开好几个窗口，总控被撑满 | 设子总控 `◆` 管任务内部，项目总控只看一行 |
 | 完成 | AI 说“做完了”就算完 | 回报附证据路径，核对是不是同一版本 |
 | 授权 | 一句“可以”被当成推送许可 | 合并、推送、发布逐道用明确话术授权 |
 | 换窗口 | 上下文爆了，从头再讲一遍 | 50% 做完手头这件就换、70% 立即交接，新窗口读文件接力 |
@@ -88,12 +89,12 @@ git clone https://github.com/rainman016/solo-ai-team-playbook.git ~/.claude/solo
 | 文件 | 内容 |
 |---|---|
 | [CLAUDE-snippet.md](CLAUDE-snippet.md) | 通用规则：所有窗口常驻，十条左右，由全局 `CLAUDE.md` 导入 |
-| [rules/lead.md](rules/lead.md) | 总控专用规则：路由、派单、任务池、调度、找 owner、汇报、接力、规则更新 |
-| [rules/shared.md](rules/shared.md) | 共用规范：验收标准写法、回报格式、证据要求、找 owner 的细则 |
+| [rules/lead.md](rules/lead.md) | 总控专用规则（项目总控和子总控读）：路由、子总控、派单、少打扰、任务池与运行资源、调度、找 owner 与协商、汇报、接力、规则更新 |
+| [rules/shared.md](rules/shared.md) | 共用规范：验收标准写法、回报格式、证据要求、协商记录、找 owner 的细则 |
 | [roles/](roles/) | 四张岗位卡：需求分析师、产品经理、开发工程师、质量评审 |
 | [PLAYBOOK.md](PLAYBOOK.md) | 原理与推荐做法：原则、角色、流转、路由、为什么这样定、与现有工具的配合 |
 | [examples/walkthrough-medium.md](examples/walkthrough-medium.md) | 端到端示例：一件中档需求从提出到收口，附小档对照 |
-| [templates/](templates/) | 任务包、回报、项目状态文件、总控台 `CLAUDE.md` 四个模板 |
+| [templates/](templates/) | 看板、状态文件、任务包、回报、总控台 `CLAUDE.md` 五个模板 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本记录：每条新条款和原来的做法 |
 
 <details>
@@ -121,6 +122,7 @@ git clone https://github.com/rainman016/solo-ai-team-playbook.git ~/.claude/solo
 - 提炼自内容型项目和功能型代码项目的真实多窗口协作实践。
 - 第二版新增部分（岗位卡、规模分档、阶段路由、资源压力）经过两轮独立复核，但**尚未在真实多线任务中完整试运行**；v2.1 的并行调度和入口标记，来自真实项目里“接力后没有并行”“分不清该在哪个窗口说话”的教训。
 - v2.2 来自两个真实项目的检验：总控转问需求把自己的上下文撑满、owner 没法边看依据边定；长期开着的总控窗口被聊天撑到自动压缩；跨账号的通知送不到，一条线停摆没人发现。改动经多轮独立复核，并实测了总控台子文件夹的加载方式。
+- v2.3 来自第三个项目（总控跑在 Codex 上）的检验：转交只做到“消息送到”没人接、总控插话过细、共用机器上运行撞车、owner 要跨窗口拼进度。新增子总控、固定看板、【已接】回执、运行资源登记、授权分层，经 7 轮独立复核；还没在真实多线任务里完整跑过。
 - 部分做法依赖 Claude Code 桌面端的能力（`SendMessage` 跨窗口发消息、`get_session` 查会话编号、查看上下文占比和额度），不支持时按“写文件 + owner 转达”降级。
 - 示例以 Claude Code + Codex 为主，换成其他 AI 工具同样适用。
 
