@@ -1,0 +1,16 @@
+{
+  "_部署说明": "部署前，将templates/lead-desk-settings.json 钩子命令中的 <HOME> 替换为用户目录绝对路径，使用正斜杠并保留双引号；配置由 CLAUDE_PROJECT_DIR 定位。",
+  "project_root": "..",
+  "writable": [
+    "<状态文件>",
+    "<任务包目录>/",
+    "<回报目录>/",
+    "<状态归档目录>/",
+    "总控台/"
+  ],
+  "protected": [
+    "总控台/.claude/"
+  ],
+  "mode": "observe",
+  "log": "拦截记录.jsonl"
+}

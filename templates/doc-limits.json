@@ -1,0 +1,30 @@
+{
+  "_说明": "放在项目根目录，文件名文档上限.json；巡检第 5–8 条读它，缺项用脚本内置默认值（即下面的数）。字数一律按字符数（Python len(str)；Git Bash 的 wc -m 在本机给的是字节，不是这个数）；行数按非空行。归档/ 不读不计。active_dirs＝活跃区目录名：第 1 个放任务包／回报／方案，第 2 个放检验子目录；本项目状态文件不叫 状态.md 时，手跑巡检要加 --status <相对路径>。项目配了 rules_budget 才跑第 8 条。",
+  "status_dispatch_max": 1900,
+  "status_total_max": 3800,
+  "status_headings": [
+    "现在在哪",
+    "任务池",
+    "待 owner 决定",
+    "持续约束",
+    "运行资源",
+    "最近完成",
+    "风险",
+    "决策记录"
+  ],
+  "recent_days": 7,
+  "changes_max_files": 15,
+  "plan_max_lines": 120,
+  "closed_days": 7,
+  "evidence_days": 14,
+  "evidence_skip_dirs": [
+    "巡检"
+  ],
+  "decision_max": 50,
+  "recent_max_rows": 10,
+  "risk_max_items": 5,
+  "active_dirs": ["改动记录", "检验"],
+  "task_package_max": 3000,
+  "report_max": 6000,
+  "conclusion_max": 1500
+}

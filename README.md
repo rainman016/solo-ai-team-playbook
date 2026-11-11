@@ -6,7 +6,7 @@
 同时开多个 AI 会话推进同一个项目时——谁说了算、什么算完成、什么需要你授权。
 
 ![license](https://img.shields.io/badge/license-CC%20BY%204.0-lightgrey)
-![version](https://img.shields.io/badge/playbook-v2.3-blue)
+![version](https://img.shields.io/badge/playbook-v2.7-blue)
 ![works with](https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex%20%7C%20any%20AI-8A2BE2)
 ![format](https://img.shields.io/badge/format-pure%20Markdown-green)
 
@@ -90,11 +90,14 @@ git clone https://github.com/rainman016/solo-ai-team-playbook.git ~/.claude/solo
 |---|---|
 | [CLAUDE-snippet.md](CLAUDE-snippet.md) | 通用规则：所有窗口常驻，十条左右，由全局 `CLAUDE.md` 导入 |
 | [rules/lead.md](rules/lead.md) | 总控专用规则（项目总控和子总控读）：路由、子总控、派单、少打扰、任务池与运行资源、调度、找 owner 与协商、汇报、接力、规则更新 |
+| [rules/sub-lead.md](rules/sub-lead.md) | 子总控规则（设了子总控才读）：设立、能做与不能做、向上报 |
 | [rules/shared.md](rules/shared.md) | 共用规范：验收标准写法、回报格式、证据要求、协商记录、找 owner 的细则 |
 | [roles/](roles/) | 四张岗位卡：需求分析师、产品经理、开发工程师、质量评审 |
 | [PLAYBOOK.md](PLAYBOOK.md) | 原理与推荐做法：原则、角色、流转、路由、为什么这样定、与现有工具的配合 |
 | [examples/walkthrough-medium.md](examples/walkthrough-medium.md) | 端到端示例：一件中档需求从提出到收口，附小档对照 |
-| [templates/](templates/) | 看板、状态文件、任务包、回报、总控台 `CLAUDE.md` 五个模板 |
+| [templates/](templates/) | 看板、状态文件、任务包、回报、总控台 `CLAUDE.md` 模板（含决策记录、文档上限、新项目起步、可选的总控台权限配置） |
+| [optional/](optional/) | **可选**机器兜底（仅 Claude 桌面端）：派单钩子、总控台写入守卫、门禁确认弹框、巡检（试点），装法见其 README |
+| [skills/relay/](skills/relay/SKILL.md) | 跨账号接力技能 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本记录：每条新条款和原来的做法 |
 
 <details>
@@ -123,6 +126,7 @@ git clone https://github.com/rainman016/solo-ai-team-playbook.git ~/.claude/solo
 - 第二版新增部分（岗位卡、规模分档、阶段路由、资源压力）经过两轮独立复核，但**尚未在真实多线任务中完整试运行**；v2.1 的并行调度和入口标记，来自真实项目里“接力后没有并行”“分不清该在哪个窗口说话”的教训。
 - v2.2 来自两个真实项目的检验：总控转问需求把自己的上下文撑满、owner 没法边看依据边定；长期开着的总控窗口被聊天撑到自动压缩；跨账号的通知送不到，一条线停摆没人发现。改动经多轮独立复核，并实测了总控台子文件夹的加载方式。
 - v2.3 来自第三个项目（总控跑在 Codex 上）的检验：转交只做到“消息送到”没人接、总控插话过细、共用机器上运行撞车、owner 要跨窗口拼进度。新增子总控、固定看板、【已接】回执、运行资源登记、授权分层，经 7 轮独立复核；还没在真实多线任务里完整跑过。
+- v2.4–v2.7 来自真实项目的试跑与检验：精简常驻规则（按字数预算）、文档治理、派单定档（贵／中／便宜三档）、窗口标题由总控管。`optional/` 里的机器兜底和巡检是可选的，巡检仍是试点，部分能力未实测。
 - 部分做法依赖 Claude Code 桌面端的能力（`SendMessage` 跨窗口发消息、`get_session` 查会话编号、查看上下文占比和额度），不支持时按“写文件 + owner 转达”降级。
 - 示例以 Claude Code + Codex 为主，换成其他 AI 工具同样适用。
 

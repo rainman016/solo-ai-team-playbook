@@ -1,0 +1,26 @@
+{
+  "env": {
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
+  },
+  "permissions": {
+    "additionalDirectories": [
+      ".."
+    ],
+    "deny": [
+      "Edit(/.claude/**)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -I \"<HOME>/.claude/collab/collab_guard.py\""
+          }
+        ]
+      }
+    ]
+  }
+}
