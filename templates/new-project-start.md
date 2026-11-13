@@ -1,15 +1,15 @@
 # 新项目起步（开新项目时读；总控专用规则“新项目起步”指到这里）
 
 1. **文件夹怎么分**：推送到不同仓库（或各自独立发布）的工作，分成不同项目文件夹，各有状态文件和总控；不放在一个项目里共用聊天上下文。跨项目只靠文件衔接（只读引用对方的文件），不改对方的文件。
-2. **项目 `CLAUDE.md`**：项目根目录必须有，可以只写一行导入 `AGENTS.md`（协作规则已由全局导入，不必再导入）。内容：角色与边界、流转、门禁清单（需 owner 确认的事和授权话术；项目自己的部署命令写进项目 `.claude/settings.json` 和 `总控台/.claude/settings.json` 两处的 `permissions.ask`：项目设置只从开窗目录读，两处分别管子窗口和总控；起步时随总控台配置一起写，之后要补的由项目总控派独立窗口改，因为 `总控台/.claude/` 受保护、根目录 `.claude/` 不在守卫白名单里）、文档纪律。其他 AI 的入口文件（如 `AGENTS.md`）只写该 AI 的职责边界，规则放在 `CLAUDE.md` 或由它导入。
+2. **项目 `CLAUDE.md`**：项目根目录必须有，只写 `@AGENTS.md`（协作规则已由全局导入，不必再导入）。规则正文写在 `AGENTS.md`：角色与边界、流转、门禁清单（需 owner 确认的事和授权话术；项目自己的部署命令写进项目 `.claude/settings.json` 和 `总控台/.claude/settings.json` 两处的 `permissions.ask`：项目设置只从开窗目录读，两处分别管子窗口和总控；起步时随总控台配置一起写，之后要补的由项目总控派独立窗口改，因为 `总控台/.claude/` 受保护、根目录 `.claude/` 不在守卫白名单里）、文档纪律。`AGENTS.md` 为规则正本，`CLAUDE.md` 只写 `@AGENTS.md`；其他入口文件只写一行指向它。
 3. **侧边栏分组**：先建本项目的分组（组名同标题里的 `[项目]`），总控把自己放进去。
-4. **状态文件和文档上限**：状态文件照 `~/.claude/solo-ai-team-playbook/templates/status.md` 建，开头写总控编号；再建 `决策记录.md`（照 `templates/decision-log.md`）；把 `templates/doc-limits.json` 复制到项目根，按 `templates/doc-limits.md` 的说明按需改数字；定好任务包、回报、`归档/` 放在哪里。没装可选巡检的项目，按总控专用规则“文档治理”每周人工检查（装了脚本的可手跑 `--docs-only`）。
+4. **状态文件和文档上限**：状态文件照 `~/.claude/solo-ai-team-playbook/templates/status.md` 建，开头写总控编号；再建 `决策记录.md`（照 `templates/decision-log.md`）；把 `templates/doc-limits.json` 复制到项目根，按 `templates/doc-limits.md` 的说明按需改数字；定好任务包、回报、`归档/` 放在哪里。没装可选巡检的项目，按总控专用规则“文档治理”每周人工检查（装了脚本的可手跑 `--docs-only`，见 `templates/doc-limits.md`），起步时由总控填进状态文件“持续约束”表（模板里有示例行）。
 5. **总控台**：总控在项目的 `总控台/` 子文件夹里开窗。该文件夹的 `CLAUDE.md` 照 `templates/lead-desk-CLAUDE.md` 写：一行导入 `@~/.claude/solo-ai-team-playbook/rules/lead.md`，加一句兜底（开工先确认上下文里有《总控专用规则》全文，没有就读文件，并提醒 owner 在本项目批准一次外部导入）。首次开窗弹出外部导入确认时，owner 点允许；拒绝后不会再提示，靠兜底句读取（2026-11-05 实测兜底有效）。首次开窗要信任该文件夹。
 6. **总控台权限（可选，只适用于 Claude 桌面端；脚本和装法见 `optional/README.md`）**（照 `~/.claude/solo-ai-team-playbook/templates/` 里的 `lead-desk-settings.json` 配 `总控台/.claude/settings.json`，`collab_guard.json` 配守卫）：
    - 守卫只放行状态文件及其归档目录、任务包和回报目录、`总控台/`；其余项目内写入新配先只记录 3 天（总控在持续约束里记下到期日，到期问 owner 切不切真拦），owner 定了再派独立窗口改配置切真拦。方案文件不在白名单里的，确认记录写进该子窗口的回报。Codex 端做不到，仍靠文字约束。
    - 部署顺序：先把 `optional/collab_guard.py` 放进 `~/.claude/collab/`，用 `echo {} | python -I "<脚本绝对路径>"` 确认退出码为 0，再装总控台设置；模板里的 `<HOME>` 必须换成本机用户目录的绝对路径（正斜杠），装完检查文件里没有残留 `<HOME>`；升级或移除脚本前先撤掉钩子。否则钩子返回退出码 2，总控台窗口里所有编辑和命令都会被拦，而且总控改不了自己的设置。
    - 子代理模型兜底（只是兜底；主路径是全局派单钩子）：模板 `lead-desk-settings.json` 里 `env.CLAUDE_CODE_SUBAGENT_MODEL=sonnet`，让总控忘传 `model` 时子代理也不继承贵档模型；只写在总控台项目设置里，不写全局 `~/.claude/settings.json` 的 `env` 段；项目 `env` 要等该文件夹被信任后生效。
-   - 配完做一次越界测试，派一个缺执行档的子代理确认被拦，再派一个合规的确认放行，打勾“总控权限已配”。
+   - 配完做一次写入越界测试；再派缺执行档的确认被拦、合规的确认放行；打勾“总控权限已配”。
    - 被拒：该派独立窗口（含同步发布包），不换写法去改；白名单内被误拦，改用编辑工具。
 7. **开子窗口**：开窗目录用项目根目录；工具不让选目录时，请 owner 在根目录开窗贴 brief。
 8. **代码项目**：另按方法论第 9 节执行（施工线最多 3 条、施工区登记、共享部分先行、小步合并、按影响补验）。

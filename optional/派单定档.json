@@ -1,5 +1,5 @@
 {
-  "_说明": "派单定档表（dispatch_guard.py 读它；改表不改代码）。依据 rules/lead.md“派单定档”（正文只分贵／中／便宜三档，这张表把档绑定到具体型号）。装到 ~/.claude/collab/派单定档.json。每个角色 allow＝允许的 [模型, 强度]；写了合格的“升档：”行才允许 upgrade_allow；升档行以 owner_approval_word 开头且后面至少 owner_approval_min_chars 个字符（时间＋owner 的原话）时，放行 known_models×known_efforts 里的任意档（fable 只能这样放行）。“测试”按开发工程师同档放，规则线会补可降 haiku·low。",
+  "_说明": "派单定档表（dispatch_guard.py 读它；改表不改代码）。依据 rules/lead.md“派单定档”（正文只分贵／中／便宜三档，这张表把档绑定到具体型号）。装到 ~/.claude/collab/派单定档.json。每个角色 allow＝允许的 [模型, 强度]；写了合格的“升档：”行才允许 upgrade_allow；升档行以 owner_approval_word 开头且后面至少 owner_approval_min_chars 个字符（时间＋owner 的原话）时，放行 known_models×known_efforts 里的任意档（fable 只能这样放行）。“测试”按开发工程师同档放，规则线会补可降 haiku·low。“owner批准”升档仅限项目总控凭 owner 本人原话写。脚本另拦 start_session 缺 permission_mode（只带 proposal_id 的卡片启动放行），每次拦截追加一行到 ~/.claude/collab/dispatch_guard_blocks.log（制表符分隔：北京时间、项目、工具名、执行档、原因前 60 字）；start_session 的 context 为 fork 放行，target 为 cloud／ssh 不查 permission_mode，带 proposal_id 补发说明时只查执行档行；Codex 派单（走 Bash）不检查。",
   "roles": {
     "子总控": {"allow": [["sonnet", "high"]]},
     "需求分析师": {"allow": [["sonnet", "medium"], ["haiku", "low"]]},

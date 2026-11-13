@@ -1,7 +1,7 @@
 """外挂巡检·第一级（脚本，不调模型）。只读项目文件；正常时不输出，有异常每条输出一行。
 
 用法：python -I patrol.py --root <项目根目录> [--status 状态.md] [--stale-hours 5]
-       （--status 要写本项目状态文件的相对路径；项目状态文件不叫 状态.md 时必须指定，否则读不到、会报“状态文件不存在”）
+       （--status 要写本项目状态文件的相对路径；项目状态文件不叫 状态.md 时必须指定，否则读不到状态文件，只报一行“读不到状态文件”，状态文件相关检查没跑）
        [--guard-config 总控台/.claude/collab_guard.json] [--probe 规则/__巡检探针__.md]
        [--observe-days 3] [--docs-only] [--limits <文档上限.json>] [--state-dir <去重状态目录>] [--tz-offset +8]
 
@@ -133,6 +133,28 @@ def evidence_paths(text: str, root: Path, need_slash: bool = False):
     return out
 
 
+UUID_RE = re.compile(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
+LOG_TS_RE = re.compile(r"^\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})")
+
+
+def recent_lines(f: Path, now: datetime, days: float = 7) -> int:
+    """错误日志里最近 N 天的非空行数；行首没有时间戳的照数（时间戳是本机时间 time.strftime 产生，按本机时区还原再和 now 比）。"""
+    n = 0
+    for l in f.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not l.strip():
+            continue
+        m = LOG_TS_RE.match(l)
+        if m:
+            try:
+                ts = datetime.strptime(m.group(1), "%Y-%m-%d %H:%M:%S").timestamp()  # 本机时区
+            except ValueError:
+                ts = None
+            if ts is not None and now.timestamp() - ts > days * 86400:
+                continue
+        n += 1
+    return n
+
+
 DISPATCH_END = "<!-- 调度区到此为止 -->"
 DEFAULT_LIMITS = {
     "status_dispatch_max": 1900,      # 状态文件：调度区（开头到标记行）字数
@@ -191,7 +213,7 @@ def md_text(f: Path) -> str:
     return f.read_text(encoding="utf-8", errors="replace")
 
 
-def docs_checks(root: Path, status_name: str, lim: dict, now: datetime, issues: dict, status_text: str):
+def docs_checks(root: Path, status_name: str, lim: dict, now: datetime, issues: dict, status_text: str, pool: str = "任务池"):
     now_ts = now.timestamp()
     day = 86400
 
@@ -274,7 +296,7 @@ def docs_checks(root: Path, status_name: str, lim: dict, now: datetime, issues: 
     # 关闭超 N 天仍在活跃区的任务包／回报
     done_rows, live = [], set()  # 关闭时间来源：最近完成表、任务池里已完成的行；在途行引用的文件不算关闭
     if status_text:
-        for heading in ("最近完成", "任务池"):
+        for heading in ("最近完成", pool):
             head, rows = table_rows(status_text, heading)
             tcol = next((i for i, h in enumerate(head) if "时间" in h or "动静" in h), None)
             scol = head.index("状态") if "状态" in head else None
@@ -354,7 +376,7 @@ def rules_check(lim: dict, issues: dict):
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", required=True)
-    ap.add_argument("--status", default="状态.md", help="状态文件相对项目根的路径，默认 状态.md；项目状态文件不叫这个名字时必须指定，否则状态文件相关检查全部跳过并报“读不到状态文件”")
+    ap.add_argument("--status", default="", help="状态文件相对项目根的路径；缺省读文档上限.json 的 status_path，再缺省用 状态.md；项目状态文件不叫这个名字时必须指定（也可在文档上限.json 写 status_path），否则状态文件相关检查全部跳过并报“读不到状态文件”")
     ap.add_argument("--stale-hours", type=float, default=5)
     ap.add_argument("--guard-config", default="总控台/.claude/collab_guard.json")
     ap.add_argument("--guard-script", default=str(Path(__file__).with_name("collab_guard.py")))
@@ -372,11 +394,17 @@ def main() -> int:
     now = datetime.strptime(a.now, "%Y-%m-%d %H:%M").replace(tzinfo=tz) if a.now else datetime.now(tz)
     now_ts = now.timestamp()
     issues = {}  # key -> 一行
+    lim = load_limits(root, issues, a.limits)
+    if not a.status:
+        sp = lim.get("status_path")
+        a.status = sp if isinstance(sp, str) and sp.strip() else "状态.md"
+    ph = lim.get("pool_heading")
+    pool = ph if isinstance(ph, str) and ph.strip() else "任务池"
 
     def core_checks():
         status_text = (root / a.status).read_text(encoding="utf-8")
-        # 1、2：任务池
-        head, rows = table_rows(status_text, "任务池")
+        # 1、2：任务池（标题读 pool_heading，缺省“任务池”）
+        head, rows = table_rows(status_text, pool)
         col = {h: i for i, h in enumerate(head)}
         for r in rows:
             if len(r) < len(head):
@@ -385,6 +413,10 @@ def main() -> int:
             st = r[col["状态"]] if "状态" in col else ""
             if any(k in st for k in SKIP_STATUS):
                 continue
+            dep_ts = None
+            wait_dep = "卡依赖" in st  # 等依赖的行：依赖列写了时间且到期才查停摆
+            if wait_dep and "依赖" in col and col["依赖"] < len(r):
+                dep_ts = parse_when(r[col["依赖"]], now)
             row_text = " | ".join(r)
             last = parse_when(r[col["最后动静"]], now) if "最后动静" in col else None
             files = [root / p for p in evidence_paths(row_text, root)]
@@ -393,10 +425,16 @@ def main() -> int:
             future_bad = last is not None and last - now_ts > 36 * 3600
             if future_bad:
                 issues[f"time:{name}"] = f"【巡检】{name}｜时间写法异常（晚于现在超过 36 小时）｜看：任务池该行"
-            if times and not future_bad:
+            dep_wait = wait_dep and (dep_ts is None or dep_ts > now_ts)  # 没写时间或还没到期：不报停摆
+            if wait_dep and dep_ts is not None and dep_ts <= now_ts:
+                times.append(dep_ts)  # 起点取最后动静和依赖时间中较晚的
+            if times and not future_bad and not dep_wait:
                 hours = (now_ts - max(times)) / 3600
                 if hours > a.stale_hours:
-                    issues[f"stale:{name}"] = f"【巡检】{name}｜{hours:.0f} 小时没有动静（阈值 {a.stale_hours:g} 小时）｜看：任务池该行"
+                    if wait_dep:
+                        issues[f"stale:{name}"] = f"【巡检】{name}｜依赖已到期 {hours:.0f} 小时，没有动静（阈值 {a.stale_hours:g} 小时）｜看：任务池该行"
+                    else:
+                        issues[f"stale:{name}"] = f"【巡检】{name}｜{hours:.0f} 小时没有动静（阈值 {a.stale_hours:g} 小时）｜看：任务池该行"
             for f in files:
                 if "回报" not in f.name:
                     continue
@@ -448,11 +486,19 @@ def main() -> int:
             # 4：观察期
             log = (desk / gcfg.get("log", "拦截记录.jsonl")) if not os.path.isabs(gcfg.get("log", "")) else Path(gcfg["log"])
             if gcfg.get("mode", "observe") == "observe" and log.exists():
-                recs = [json.loads(l) for l in log.read_text(encoding="utf-8").splitlines() if l.strip()]
+                recs = []  # 只取“窗口”是 UUID 的真实记录；坏行、测试记录（自拟窗口名）一律跳过
+                for l in log.read_text(encoding="utf-8", errors="replace").splitlines():
+                    try:
+                        x = json.loads(l)
+                        if not (isinstance(x, dict) and UUID_RE.match(str(x.get("窗口", "")))):
+                            continue
+                        x["_ts"] = datetime.strptime(str(x["时间"]), "%Y-%m-%d %H:%M:%S").timestamp()
+                    except (ValueError, KeyError, TypeError):
+                        continue
+                    recs.append(x)
                 if recs:
-                    first = datetime.strptime(recs[0]["时间"], "%Y-%m-%d %H:%M:%S")
                     # 守卫日志由本机 time.strftime 产生，按本机时区还原绝对时间。
-                    days = (now_ts - first.timestamp()) / 86400
+                    days = (now_ts - min(x["_ts"] for x in recs)) / 86400
                     if days >= a.observe_days:
                         n = sum(1 for x in recs if x.get("本来会拦"))
                         u = sum(1 for x in recs if x.get("规则") == "无法解析")
@@ -462,14 +508,14 @@ def main() -> int:
         # 守卫自身出错（出错时一律放行，所以要单独报；含写入守卫和派单守卫两个日志）
         errlog = Path.home() / ".claude" / "collab" / "guard_errors.log"
         if errlog.exists():
-            n_err = sum(1 for l in errlog.read_text(encoding="utf-8", errors="replace").splitlines() if l.strip())
+            n_err = recent_lines(errlog, now)
             if n_err:
-                issues[f"guard:errors:{n_err}"] = f"【巡检】守卫出错累计 {n_err} 次（出错时会放行）｜看：~/.claude/collab/guard_errors.log"
+                issues[f"guard:errors:{n_err}"] = f"【巡检】守卫出错累计 {n_err} 次（最近 7 天，出错时会放行）｜看：~/.claude/collab/guard_errors.log"
         derr = Path.home() / ".claude" / "collab" / "dispatch_guard_errors.log"
         if derr.exists():
-            n_d = sum(1 for l in derr.read_text(encoding="utf-8", errors="replace").splitlines() if l.strip())
+            n_d = recent_lines(derr, now)
             if n_d:
-                issues[f"guard:dispatch_errors:{n_d}"] = f"【巡检】派单守卫出错累计 {n_d} 次（出错时会放行，派单没被核对）｜看：~/.claude/collab/dispatch_guard_errors.log"
+                issues[f"guard:dispatch_errors:{n_d}"] = f"【巡检】派单守卫出错累计 {n_d} 次（最近 7 天，出错时会放行，派单没被核对）｜看：~/.claude/collab/dispatch_guard_errors.log"
 
 
     if not a.docs_only:
@@ -478,8 +524,7 @@ def main() -> int:
     status_text = status_path.read_text(encoding="utf-8") if status_path.is_file() else ""
     if not status_path.is_file():
         issues["doc:status:missing"] = f"【巡检】读不到状态文件 {a.status}（本项目状态文件不叫这个名字时，加 --status <相对路径>），状态文件相关检查没跑｜看：--status"
-    lim = load_limits(root, issues, a.limits)
-    docs_checks(root, a.status, lim, now, issues, status_text)
+    docs_checks(root, a.status, lim, now, issues, status_text, pool)
     if not a.docs_only:
         rules_check(lim, issues)
 

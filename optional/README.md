@@ -4,7 +4,7 @@
 
 | 文件 | 作用 | 状态 |
 |---|---|---|
-| `dispatch_guard.py` + `派单定档.json` | 派窗口、派子代理前核对“执行档”声明和定档表 | 可选 |
+| `dispatch_guard.py` + `派单定档.json` | 派窗口、派子代理前核对“执行档”声明和定档表；本机 `start_session` 缺 `permission_mode` 也拦；每次拦截追加一行到 `~/.claude/collab/dispatch_guard_blocks.log` | 可选 |
 | `add_global_dispatch_hook.py` | 把派单钩子追加进设置文件（先 `--dry-run`） | 可选 |
 | `collab_guard.py` + `../templates/collab_guard.json` + `../templates/lead-desk-settings.json` | 总控台写入守卫：总控只能写白名单路径；先只记录，到期再切真拦 | 可选 |
 | `add_gate_ask.py` | 给 6 条门禁命令（`git push`、`git merge`、`gh pr merge`、`gh repo create`、`gh repo edit`、`gh release create`）加确认弹框；弹框不算授权 | 可选 |

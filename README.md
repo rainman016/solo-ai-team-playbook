@@ -6,7 +6,7 @@
 同时开多个 AI 会话推进同一个项目时——谁说了算、什么算完成、什么需要你授权。
 
 ![license](https://img.shields.io/badge/license-CC%20BY%204.0-lightgrey)
-![version](https://img.shields.io/badge/playbook-v2.7-blue)
+![version](https://img.shields.io/badge/playbook-v3.0-blue)
 ![works with](https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex%20%7C%20any%20AI-8A2BE2)
 ![format](https://img.shields.io/badge/format-pure%20Markdown-green)
 
@@ -80,7 +80,7 @@ git clone https://github.com/rainman016/solo-ai-team-playbook.git ~/.claude/solo
 
 1. **先看示例**：花 5 分钟读 [examples/walkthrough-medium.md](examples/walkthrough-medium.md)，了解整套流转长什么样。
 2. **装通用规则**：在全局 `~/.claude/CLAUDE.md` 加一行 `@~/.claude/solo-ai-team-playbook/CLAUDE-snippet.md`，所有窗口都会加载。规则里的路径都按上面的克隆位置写；装在别处的，把路径前缀统一替换掉。
-3. **开总控台**：在项目里建 `总控台/` 子文件夹，把 [templates/lead-desk-CLAUDE.md](templates/lead-desk-CLAUDE.md) 复制成它的 `CLAUDE.md`，总控固定在这里开窗（首次开窗弹出外部导入确认时点允许）。再让总控按 `PLAYBOOK.md` 第 8 节搭最小起步：项目根 `CLAUDE.md`、状态文件、任务包和回报的位置。
+3. **开总控台**：在项目里建 `总控台/` 子文件夹，把 [templates/lead-desk-CLAUDE.md](templates/lead-desk-CLAUDE.md) 复制成它的 `CLAUDE.md`，总控固定在这里开窗（首次开窗弹出外部导入确认时点允许）。再让总控按 `PLAYBOOK.md` 第 8 节搭最小起步：项目根 `AGENTS.md`（`CLAUDE.md` 只写 `@AGENTS.md`）、状态文件、任务包和回报的位置。
 4. **只对总控说**：总控接单时会先回一行“→ 档位／岗位卡／执行者，原因”，不对就当场叫停。
 5. **以后更新**：`git pull` 之后看 [CHANGELOG.md](CHANGELOG.md)，让各项目总控对照项目规则，把冲突和新增条款交你确认。
 
@@ -98,6 +98,7 @@ git clone https://github.com/rainman016/solo-ai-team-playbook.git ~/.claude/solo
 | [templates/](templates/) | 看板、状态文件、任务包、回报、总控台 `CLAUDE.md` 模板（含决策记录、文档上限、新项目起步、可选的总控台权限配置） |
 | [optional/](optional/) | **可选**机器兜底（仅 Claude 桌面端）：派单钩子、总控台写入守卫、门禁确认弹框、巡检（试点），装法见其 README |
 | [skills/relay/](skills/relay/SKILL.md) | 跨账号接力技能 |
+| [衔接脚手架.md](衔接脚手架.md) | 与 AI 协同开发脚手架的衔接表、门禁清单写法、改动时要通知的位置 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本记录：每条新条款和原来的做法 |
 
 <details>
@@ -115,6 +116,10 @@ git clone https://github.com/rainman016/solo-ai-team-playbook.git ~/.claude/solo
 
 </details>
 
+## 与脚手架 v2.x 衔接
+
+写代码项目时，可以和 [AI 协同开发脚手架](https://github.com/rainman016/ai-collab-dev-scaffold)（仓库 `rainman016/ai-collab-dev-scaffold`）一起用：本手册管窗口之间怎么派单、回报、通知，脚手架管每个窗口里的代码怎么施工、验证、过门禁。两边的对应关系见 [衔接脚手架.md](衔接脚手架.md)。
+
 ## 适用与不适用
 
 - ✅ **适用**：一个 owner + 2 个以上 AI 会话推进同一项目；同一种 AI 多开或多家 AI 混用都行；内容型项目、代码项目都行。
@@ -126,6 +131,7 @@ git clone https://github.com/rainman016/solo-ai-team-playbook.git ~/.claude/solo
 - 第二版新增部分（岗位卡、规模分档、阶段路由、资源压力）经过两轮独立复核，但**尚未在真实多线任务中完整试运行**；v2.1 的并行调度和入口标记，来自真实项目里“接力后没有并行”“分不清该在哪个窗口说话”的教训。
 - v2.2 来自两个真实项目的检验：总控转问需求把自己的上下文撑满、owner 没法边看依据边定；长期开着的总控窗口被聊天撑到自动压缩；跨账号的通知送不到，一条线停摆没人发现。改动经多轮独立复核，并实测了总控台子文件夹的加载方式。
 - v2.3 来自第三个项目（总控跑在 Codex 上）的检验：转交只做到“消息送到”没人接、总控插话过细、共用机器上运行撞车、owner 要跨窗口拼进度。新增子总控、固定看板、【已接】回执、运行资源登记、授权分层，经 7 轮独立复核；还没在真实多线任务里完整跑过。
+- v2.8–v3.0 来自继续试跑与复核：手测清单模板、任务池逐项列明细、规则正本改 `AGENTS.md`、产品经理卡加真实数据试跑、Codex 派单先读卡、可选巡检少误报；改动经独立复核，可选脚本跑过自带测试，线上钩子环境未全面实测。
 - v2.4–v2.7 来自真实项目的试跑与检验：精简常驻规则（按字数预算）、文档治理、派单定档（贵／中／便宜三档）、窗口标题由总控管。`optional/` 里的机器兜底和巡检是可选的，巡检仍是试点，部分能力未实测。
 - 部分做法依赖 Claude Code 桌面端的能力（`SendMessage` 跨窗口发消息、`get_session` 查会话编号、查看上下文占比和额度），不支持时按“写文件 + owner 转达”降级。
 - 示例以 Claude Code + Codex 为主，换成其他 AI 工具同样适用。

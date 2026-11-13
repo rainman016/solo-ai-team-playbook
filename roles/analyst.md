@@ -9,4 +9,4 @@
 - 自检：每条事实有出处；没核实到的写“未验证”。
 - 停止：需要读密钥类文件，或范围明显超出问题 → 回报总控。
 
-格式要求见 `~/.claude/solo-ai-team-playbook/rules/shared.md`。
+格式要求见 [rules/shared.md](https://github.com/rainman016/solo-ai-team-playbook/blob/v3.0/rules/shared.md)。

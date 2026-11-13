@@ -10,4 +10,4 @@
 - 自检：每条问题都对照验收标准或正确性，可以复现或有出处；没覆盖到的范围写明。
 - 停止：证据不全或版本对不上 → 回报总控补齐。
 
-格式要求见 `~/.claude/solo-ai-team-playbook/rules/shared.md`。
+格式要求见 [rules/shared.md](https://github.com/rainman016/solo-ai-team-playbook/blob/v3.0/rules/shared.md)。
